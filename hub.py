@@ -58,12 +58,12 @@ db.init_app(app)
 db.create_all()  
 user_manager = UserManager(app, db, User) # Setting up Flask-User to handle user authentication and account management
 SERVER_AUTHKEY = '1234567890'  # Server authorization key used for validating incoming requests
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, origins="http://localhost:3000")
 #__________________________________________ROUTES: Home page route - Displaying a list of all channels and is accessible to anyone
 @app.route('/')
 def home_page():
     channels = Channel.query.all()      # Query all channels from the database
-    return render_template("home.html")      # Render the home.html template, passing the channels list to the template
+    return render_template("home.html", channels=channels)      # Render the home.html template, passing the channels list to the template
 
 
 #__________________________________________ HELPER FUNCTIONS to perform health check for a given channel

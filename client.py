@@ -7,27 +7,21 @@ from flask_cors import CORS
 import os
 from flask import send_from_directory
 #______________________________________Flask Application Initialization
-app = Flask(__name__, static_folder="../Front3/build/static")
-#______________________________________React App Routing To Main Page
-@app.route('/')
-def serve_react_app(): # Send index.html from React build folder
-    return send_from_directory(os.path.join(app.root_path, '../Front3/build'), 'index.html')
-@app.route('/static/<path:path>') # Serve static files (CSS, JS, images) from the React app
-def serve_static(path):
-    return send_from_directory(os.path.join(app.root_path, '../Front3/build/static'), path)
+app = Flask(__name__, static_folder="frontend/build/static")
+
 #______________________________________Server Configuration
 HUB_AUTHKEY = '1234567890'# Authentication key for Hub
 HUB_URL = 'http://localhost:5555'# Hub endpoint URL
 CHANNELS = None# Cached list of channels
 LAST_CHANNEL_UPDATE = None# Timestamp of last channel update
 #______________________________________CORS Configuration: Allowing React app to make requests
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, origins="http://localhost:3000")
 #______________________________________Channel Validation Update
 def update_channels():
     global CHANNELS, LAST_CHANNEL_UPDATE
     if CHANNELS and LAST_CHANNEL_UPDATE and (datetime.datetime.now() - LAST_CHANNEL_UPDATE).seconds < 60:
         return CHANNELS # fetch list of channels from server
-    response = requests.get(HUB_URL + '/channels', headers={'Authorization': 'authkey ' + HUB_AUTHKEY})
+    response = requests.get('http://localhost:5555/chat/', headers={'Authorization': 'authkey 1234567890'})
     if response.status_code != 200:
         return "Error fetching channels: "+str(response.text), 400
     channels_response = response.json()
@@ -82,6 +76,15 @@ def post_message():
     if response.status_code != 200:
         return "Error posting message: "+str(response.text), 400
     return redirect(url_for('show_channel')+'?channel='+urllib.parse.quote(post_channel))
+
+#______________________________________React App Routing To Main Page
+@app.route('/')
+def serve_react_app(): # Send index.html from React build folder
+    return send_from_directory(os.path.join(app.root_path, 'frontend/build'), 'index.html')
+@app.route('/static/<path:path>') # Serve static files (CSS, JS, images) from the React app
+def serve_static(path):
+    return send_from_directory(os.path.join(app.root_path, 'frontend/build/static'), path)
+
 #______________________________________Application Entry Point
 if __name__ == '__main__':
     app.run(port=5005, debug=True)# Start development server on port 5005

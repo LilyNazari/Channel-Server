@@ -44,25 +44,26 @@ def register_command():
 
 #_________________________________________Request Authorization Check
 def check_authorization(request):
-    global CHANNEL_AUTHKEY
+    print("Authorization Header:", request.headers.get('Authorization'))  # Log the header for debugging
     if 'Authorization' not in request.headers:
         return False
     if request.headers['Authorization'] != 'authkey ' + CHANNEL_AUTHKEY:
         return False
     return True
 
+
 #_________________________________________Health Check Endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
     if not check_authorization(request):
-        return "Invalid authorization", 400
+        return "Invalid authorization1", 400
     return jsonify({'name': CHANNEL_NAME}),  200
 
 #_________________________________________Get Messages: Returns A list of messages
 @app.route('/', methods=['GET'])
 def home_page():
-    if not check_authorization(request):
-        return "Invalid authorization", 400
+    #if not check_authorization(request):
+        #return "Invalid authorization2", 400
     return jsonify(read_messages())
 
 #_________________________________________Off-Topic Detection using Naive Bayes
@@ -130,7 +131,7 @@ def generate_feedback(message_content):
 @app.route('/', methods=['POST'])
 def send_message():
     if not check_authorization(request):
-        return "Invalid authorization", 400
+        return "Invalid authorization3", 400
     
     message = request.json
     if not message or 'content' not in message or 'sender' not in message or 'timestamp' not in message:
