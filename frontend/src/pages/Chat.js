@@ -8,10 +8,8 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5001/', {
-      headers: {
-        Authorization: 'authkey 1234567890'
-      }
+    axios.get('http://127.0.0.1:5001/', {
+      headers: {'Authorization': 'authkey 1234567890'}
     })
     .then(response => {
       setMessages(response.data);
@@ -28,10 +26,8 @@ const Chat = () => {
       timestamp: Date.now().toString()
     };
 
-    axios.post('http://localhost:5001/', message, {
-      headers: {
-        Authorization: 'authkey 1234567890'
-      }
+    axios.post('http://127.0.0.1:5001/', message, {
+      headers: {'Authorization': 'authkey 1234567890'}
     })
     .then(() => {
       setMessages([...messages, message]);

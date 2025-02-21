@@ -8,7 +8,7 @@ const ChannelList = ({ onSelectChannel }) => {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await axios.get('http://localhost:5555/channels', {
+        const response = await axios.get('http://127.0.0.1:5555/channels', {
           headers: {'Authorization': 'authkey 1234567890'}
         });
         // Extracting channels array from the response

@@ -8,14 +8,14 @@ import os
 from flask import send_from_directory
 #______________________________________Flask Application Initialization
 app = Flask(__name__, static_folder="frontend/build/static")
-
+#______________________________________CORS Configuration: Allowing React app to make requests
+CORS(app, origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
 #______________________________________Server Configuration
 HUB_AUTHKEY = '1234567890'# Authentication key for Hub
 HUB_URL = 'http://localhost:5555'# Hub endpoint URL
 CHANNELS = None# Cached list of channels
 LAST_CHANNEL_UPDATE = None# Timestamp of last channel update
-#______________________________________CORS Configuration: Allowing React app to make requests
-CORS(app, origins="http://localhost:3000")
+
 #______________________________________Channel Validation Update
 def update_channels():
     global CHANNELS, LAST_CHANNEL_UPDATE
@@ -38,6 +38,7 @@ def home_page():
 #______________________________________Routing To Show and display list of messages from channel
 @app.route('/show')
 def show_channel():
+    print("Request headers:", request.headers)  # Just for checking
     show_channel = request.args.get('channel', None)
     if not show_channel:
         return "No channel specified", 400
@@ -76,7 +77,6 @@ def post_message():
     if response.status_code != 200:
         return "Error posting message: "+str(response.text), 400
     return redirect(url_for('show_channel')+'?channel='+urllib.parse.quote(post_channel))
-
 #______________________________________React App Routing To Main Page
 @app.route('/')
 def serve_react_app(): # Send index.html from React build folder

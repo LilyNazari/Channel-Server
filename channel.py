@@ -27,20 +27,33 @@ CHANNEL_TYPE_OF_SERVICE = 'aiweb24:chat'
 @app.cli.command('register')
 def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
+    headers = {'Authorization': 'authkey 1234567890'}
     # send a POST request to server /channels
     response = requests.post(HUB_URL + '/channels', 
-                             headers={'Authorization': 'authkey ' + HUB_AUTHKEY},
+                             headers={'Authorization': 'authkey 1234567890'}, 
                              data=json.dumps({
+                                "headers": 'Authorization: authkey 0987654321',
                                 "name": CHANNEL_NAME,
                                 "endpoint": CHANNEL_ENDPOINT,
                                 "authkey": CHANNEL_AUTHKEY,
                                 "type_of_service": CHANNEL_TYPE_OF_SERVICE,
                              }))
+    
     if response.status_code != 200:
         print("Error creating channel: "+str(response.status_code))
         print(response.text)
-    else:
-        print(f"Channel {CHANNEL_NAME} registered successfully.")
+        return
+    
+    channel_info = {
+        "name": CHANNEL_NAME,
+        "endpoint": CHANNEL_ENDPOINT,
+        "authkey": CHANNEL_AUTHKEY,
+        "type_of_service": CHANNEL_TYPE_OF_SERVICE
+    }
+    with open("channel_info.json", "w") as f:
+        json.dump(channel_info, f, indent=4)
+        
+    print(f"Channel {CHANNEL_NAME} registered successfully.")
 
 #_________________________________________Request Authorization Check
 def check_authorization(request):
@@ -50,7 +63,6 @@ def check_authorization(request):
     if request.headers['Authorization'] != 'authkey ' + CHANNEL_AUTHKEY:
         return False
     return True
-
 
 #_________________________________________Health Check Endpoint
 @app.route('/health', methods=['GET'])
@@ -62,8 +74,8 @@ def health_check():
 #_________________________________________Get Messages: Returns A list of messages
 @app.route('/', methods=['GET'])
 def home_page():
-    #if not check_authorization(request):
-        #return "Invalid authorization2", 400
+    if not check_authorization(request):
+        return "Invalid authorization2", 400
     return jsonify(read_messages())
 
 #_________________________________________Off-Topic Detection using Naive Bayes

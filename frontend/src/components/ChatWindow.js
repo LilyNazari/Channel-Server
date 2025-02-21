@@ -8,7 +8,7 @@ const ChatWindow = ({ channelId }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       if (channelId) {
-        const response = await axios.get(`http://localhost:5005/channels/${channelId}/messages`, {headers: {'Authorization': 'authkey 1234567890'}});
+        const response = await axios.get(`http://127.0.0.1:5005/channels/${channelId}/messages`, {headers: {'Authorization': 'authkey 1234567890'}});
         setMessages(response.data);
       }
     };
@@ -19,14 +19,14 @@ const ChatWindow = ({ channelId }) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
     
-    await axios.post(`http://localhost:5005/channels/${channelId}/messages`, {headers: {'Authorization': 'authkey 1234567890'}}, {
+    await axios.post(`http://127.0.0.1:5005/channels/${channelId}/messages`, {headers: {'Authorization': 'authkey 1234567890'}}, {
       content: newMessage,
       user: 'User1', // Replace with dynamic user if you have authentication
     });
 
     setNewMessage('');
     // Refresh messages after sending
-    const response = await axios.get(`http://localhost:5005/channels/${channelId}/messages` , {headers: {'Authorization': 'authkey 1234567890'}}); 
+    const response = await axios.get(`http://127.0.0.1:5005/channels/${channelId}/messages` , {headers: {'Authorization': 'authkey 1234567890'}}); 
     setMessages(response.data);
   };
 

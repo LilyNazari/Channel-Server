@@ -5,4 +5,4 @@ textblob
 better_profanity
 scikit-learn
 CORS
-Flask-User==1.0.2.2
+Flask-Login

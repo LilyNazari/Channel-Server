@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 //import Home from './pages/Home';
 import Chat from './pages/Chat';
+import Home from './pages/Home';
 import Header from './components/Header';
 import ChatWindow from './components/ChatWindow';
 import ChannelList from './components/ChannelList';
@@ -13,8 +14,8 @@ function App() {
     <Router>
       <Header />
       <Routes>
-        <Route path="/"/>
-        <Route path="/chat/:channelName" element={<Chat />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/chat/:channelName" element={<Chat />} />
       </Routes>
       <div className="flex h-screen p-4 bg-gray-200">
       <div className="w-1/4">

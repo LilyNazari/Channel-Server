@@ -1,12 +1,11 @@
 
 #__________________________________________IMPORTS
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import json 
 import datetime 
 import requests   
-from flask_user import UserManager, UserMixin
-from flask_cors import CORS
+from flask_login import LoginManager, UserMixin
 
 db = SQLAlchemy() 
 #__________________________________________DATA MODEL:Defining the Channel model representing the channels table in the database
@@ -38,7 +37,7 @@ class ConfigClass(object):
     ########################### Secret key for session management (Note: Replace this in production)
 
     # Flask settings
-    SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!'
+    SECRET_KEY = 'INSECURE secret!'
     # Flask-SQLAlchemy settings
     SQLALCHEMY_DATABASE_URI = 'sqlite:///chat_server.sqlite'  
     SQLALCHEMY_TRACK_MODIFICATIONS = False  
@@ -51,19 +50,17 @@ class ConfigClass(object):
 
 
 #__________________________________________APP INITIALIZATION: Creation & Configuration of an instance of the Flask application
-app = Flask(__name__, static_folder="../Front3/build/static")
+app = Flask(__name__, static_folder="frontend/build/static")
 app.config.from_object(__name__ + '.ConfigClass')  # 
 app.app_context().push() 
 db.init_app(app)  
 db.create_all()  
-user_manager = UserManager(app, db, User) # Setting up Flask-User to handle user authentication and account management
+user_manager = LoginManager(app) # Setting up Flask-login to handle user authentication and account management
+@user_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 SERVER_AUTHKEY = '1234567890'  # Server authorization key used for validating incoming requests
-CORS(app, origins="http://localhost:3000")
-#__________________________________________ROUTES: Home page route - Displaying a list of all channels and is accessible to anyone
-@app.route('/')
-def home_page():
-    channels = Channel.query.all()      # Query all channels from the database
-    return render_template("home.html", channels=channels)      # Render the home.html template, passing the channels list to the template
+STANDARD_CLIENT_URL = 'http://localhost:5005' # standard configuration in client.py, chang to real URL if necessary
 
 
 #__________________________________________ HELPER FUNCTIONS to perform health check for a given channel
@@ -74,17 +71,38 @@ def health_check(endpoint, authkey):
         return False
     if 'name' not in response.json(): # Check if the response is JSON and contains the channel name
         return False
-    channel = Channel.query.filter_by(endpoint=endpoint).first()      # Check if the channel name matches the expected name in the database
+    channel = Channel.query.filter_by(endpoint=endpoint).first()
+    channel.active = False
+    db.session.commit()
+
+      # Check if the channel name matches the expected name in the database
     if not channel:
         print(f"Channel {endpoint} not found in database")
         return False
     expected_name = channel.name      
     if response.json()['name'] != expected_name:
         return False
-
+    
+    channel.active = True
     channel.last_heartbeat = datetime.datetime.now()      # If all checks pass, update the last_heartbeat to the current time
     db.session.commit()    # Commit the update to the database
     return True      # Return True indicating the channel passed the health check
+
+
+#__________________________________________cli command to check health of all channels
+@app.cli.command('check_channels')
+def check_channels():
+    channels = Channel.query.all()
+    for channel in channels:
+        if not health_check(channel.endpoint, channel.authkey):
+            print(f"Channel {channel.endpoint} is not healthy")
+        else:
+            print(f"Channel {channel.endpoint} is healthy")
+#__________________________________________ROUTES: Home page route - Displaying a list of all channels and is accessible to anyone
+@app.route('/')
+def home_page():
+    channels = Channel.query.all()      # Query all channels from the database
+    return render_template("hub_home.html", channels=channels, STANDARD_CLIENT_URL=STANDARD_CLIENT_URL)
 
 
 #__________________________________________REST API ENDPOINTS: Flask REST route endpoints for creating or updating a channel (POST request)
@@ -140,6 +158,19 @@ def get_channels():
                               'endpoint': c.endpoint,
                               'authkey': c.authkey,
                               'type_of_service': c.type_of_service} for c in channels]), 200
+@app.route('/health', methods=['GET'])
+def health():
+    # check either all channels or a specific channel (if id is provided)
+    if 'id' in request.args:
+        channel = Channel.query.filter_by(id=request.args['id']).first()
+        health_check(channel.endpoint, channel.authkey)
+    else:
+        channels = Channel.query.all()
+        for channel in channels:
+            health_check(channel.endpoint, channel.authkey)
+
+    # flask redirect to home page
+    return redirect(url_for('home_page'))
 
 #__________________________________________________________________APPLICATION ENTRY POINT: Run the Flask application on port 5555 in debug mode
 if __name__ == '__main__':
