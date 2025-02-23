@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 import json 
 import datetime 
 import requests   
-from flask_login import LoginManager, UserMixin
 
 db = SQLAlchemy() 
 #__________________________________________DATA MODEL:Defining the Channel model representing the channels table in the database
@@ -21,32 +20,16 @@ class Channel(db.Model):
     last_heartbeat = db.Column(db.DateTime(), nullable=True, server_default=None)
 
 
-#__________________________________________USER MODEL required by Flask-User for authentication and account management
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100, collation='NOCASE'), nullable=False, unique=True)
-    email = db.Column(db.String(255), nullable=False, unique=True)
-    password = db.Column(db.String(255), nullable=False)
-    active = db.Column(db.Boolean(), nullable=False, server_default='1')
-    email_confirmed_at = db.Column(db.DateTime())
-
-
 #__________________________________________Class-Based Configuration for the Flask Application
 class ConfigClass(object):
     ########################### Secret key for session management (Note: Replace this in production)
 
     # Flask settings
-    SECRET_KEY = 'INSECURE secret!'
+    SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!' # change to something random, no matter what
     # Flask-SQLAlchemy settings
     SQLALCHEMY_DATABASE_URI = 'sqlite:///chat_server.sqlite'  
     SQLALCHEMY_TRACK_MODIFICATIONS = False  
-    # Flask-User settings
-    USER_MANAGER_ENABLE_EMAIL = False  # Disabled email for now
-    USER_APP_NAME = "Chat Server"  # Shown in emails and page titles
-    USER_ENABLE_USERNAME = True  
-    USER_REQUIRE_RETYPE_PASSWORD = False  # Disabled password for now
-    USER_EMAIL_SENDER_EMAIL = "noreply@example.com"
+    
 
 
 #__________________________________________APP INITIALIZATION: Creation & Configuration of an instance of the Flask application
@@ -55,40 +38,43 @@ app.config.from_object(__name__ + '.ConfigClass')  #
 app.app_context().push() 
 db.init_app(app)  
 db.create_all()  
-user_manager = LoginManager(app) # Setting up Flask-login to handle user authentication and account management
-@user_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+
 SERVER_AUTHKEY = '1234567890'  # Server authorization key used for validating incoming requests
 STANDARD_CLIENT_URL = 'http://localhost:5005' # standard configuration in client.py, chang to real URL if necessary
 
 
 #__________________________________________ HELPER FUNCTIONS to perform health check for a given channel
 def health_check(endpoint, authkey):
-    response = requests.get(endpoint+'/health', # Make a GET request to the channel's health endpoint 
-                            headers={'Authorization': 'authkey '+authkey})
-    if response.status_code != 200: # Check if the response status is 200 (OK) or the health check is failed.
+    # make GET request to URL
+    # add authkey to request header
+    try:
+        response = requests.get(endpoint+'/health',
+                                headers={'Authorization': 'authkey '+authkey})
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
         return False
-    if 'name' not in response.json(): # Check if the response is JSON and contains the channel name
+    if response.status_code != 200:
         return False
+    # check if response is JSON with {"name": <channel_name>}
+    if 'name' not in response.json():
+        return False
+    # check if channel name is as expected
+    # (channels can't change their name, must be re-registered)
     channel = Channel.query.filter_by(endpoint=endpoint).first()
     channel.active = False
     db.session.commit()
-
-      # Check if the channel name matches the expected name in the database
     if not channel:
         print(f"Channel {endpoint} not found in database")
         return False
-    expected_name = channel.name      
+    expected_name = channel.name
     if response.json()['name'] != expected_name:
         return False
-    
+
+    # everything is OK, set last_heartbeat to now
     channel.active = True
-    channel.last_heartbeat = datetime.datetime.now()      # If all checks pass, update the last_heartbeat to the current time
-    db.session.commit()    # Commit the update to the database
-    return True      # Return True indicating the channel passed the health check
-
-
+    channel.last_heartbeat = datetime.datetime.now()
+    db.session.commit()  # save to database
+    return True
 #__________________________________________cli command to check health of all channels
 @app.cli.command('check_channels')
 def check_channels():
@@ -103,7 +89,6 @@ def check_channels():
 def home_page():
     channels = Channel.query.all()      # Query all channels from the database
     return render_template("hub_home.html", channels=channels, STANDARD_CLIENT_URL=STANDARD_CLIENT_URL)
-
 
 #__________________________________________REST API ENDPOINTS: Flask REST route endpoints for creating or updating a channel (POST request)
 @app.route('/channels', methods=['POST'])

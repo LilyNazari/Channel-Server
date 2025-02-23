@@ -6,22 +6,51 @@ import datetime
 from flask_cors import CORS
 import os
 from flask import send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin
+
 #______________________________________Flask Application Initialization
 app = Flask(__name__, static_folder="frontend/build/static")
 #______________________________________CORS Configuration: Allowing React app to make requests
-CORS(app, origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
+CORS(app, origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"])
 #______________________________________Server Configuration
 HUB_AUTHKEY = '1234567890'# Authentication key for Hub
 HUB_URL = 'http://localhost:5555'# Hub endpoint URL
 CHANNELS = None# Cached list of channels
 LAST_CHANNEL_UPDATE = None# Timestamp of last channel update
+db = SQLAlchemy() 
 
+#__________________________________________USER MODEL required by Flask-User for authentication and account management
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100, collation='NOCASE'), nullable=False, unique=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    active = db.Column(db.Boolean(), nullable=False, server_default='1')
+    email_confirmed_at = db.Column(db.DateTime())
+
+
+#__________________________________________Class-Based Configuration for the Flask Application
+class ConfigClass(object):
+    ########################### Secret key for session management (Note: Replace this in production)
+    # Flask-User settings
+    USER_MANAGER_ENABLE_EMAIL = False  # Disabled email for now
+    USER_APP_NAME = "Chat Server"  # Shown in emails and page titles
+    USER_ENABLE_USERNAME = True  
+    USER_REQUIRE_RETYPE_PASSWORD = False  # Disabled password for now
+    USER_EMAIL_SENDER_EMAIL = "noreply@example.com"
+user_manager = LoginManager(app) # Setting up Flask-login to handle user authentication and account management
+@user_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 #______________________________________Channel Validation Update
 def update_channels():
     global CHANNELS, LAST_CHANNEL_UPDATE
     if CHANNELS and LAST_CHANNEL_UPDATE and (datetime.datetime.now() - LAST_CHANNEL_UPDATE).seconds < 60:
         return CHANNELS # fetch list of channels from server
-    response = requests.get('http://localhost:5555/chat/', headers={'Authorization': 'authkey 1234567890'})
+    response = requests.get('http://localhost:5555/channels', headers={'Authorization': 'authkey 1234567890'})
+    print("Response from Hub:", response.text) 
     if response.status_code != 200:
         return "Error fetching channels: "+str(response.text), 400
     channels_response = response.json()

@@ -10,7 +10,7 @@ from better_profanity import profanity
 #__________________________________________Create and configure Flask app
 profanity.load_censor_words() # Loading profanity filter
 class ConfigClass(object): # Class-based application configuration
-    SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!'
+    SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!' # change to something random, no matter what
 app = Flask(__name__)
 app.config.from_object(__name__ + '.ConfigClass')  
 app.app_context().push() # create an app context before initializing db
@@ -18,7 +18,7 @@ app.app_context().push() # create an app context before initializing db
 #__________________________________________Channel and Hub Configuration
 HUB_URL = 'http://localhost:5555'
 HUB_AUTHKEY = '1234567890'
-CHANNEL_AUTHKEY = '1234567890'
+CHANNEL_AUTHKEY = '0987654321'
 CHANNEL_NAME = "Art History Chat"
 CHANNEL_ENDPOINT = "http://localhost:5001"
 CHANNEL_FILE = 'messages.json'
@@ -27,12 +27,9 @@ CHANNEL_TYPE_OF_SERVICE = 'aiweb24:chat'
 @app.cli.command('register')
 def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
-    headers = {'Authorization': 'authkey 1234567890'}
     # send a POST request to server /channels
     response = requests.post(HUB_URL + '/channels', 
-                             headers={'Authorization': 'authkey 1234567890'}, 
                              data=json.dumps({
-                                "headers": 'Authorization: authkey 0987654321',
                                 "name": CHANNEL_NAME,
                                 "endpoint": CHANNEL_ENDPOINT,
                                 "authkey": CHANNEL_AUTHKEY,
@@ -57,6 +54,7 @@ def register_command():
 
 #_________________________________________Request Authorization Check
 def check_authorization(request):
+    global CHANNEL_AUTHKEY
     print("Authorization Header:", request.headers.get('Authorization'))  # Log the header for debugging
     if 'Authorization' not in request.headers:
         return False
@@ -67,15 +65,15 @@ def check_authorization(request):
 #_________________________________________Health Check Endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    if not check_authorization(request):
-        return "Invalid authorization1", 400
+    """if not check_authorization(request):
+        return "Invalid authorization1", 400"""
     return jsonify({'name': CHANNEL_NAME}),  200
 
 #_________________________________________Get Messages: Returns A list of messages
 @app.route('/', methods=['GET'])
 def home_page():
-    if not check_authorization(request):
-        return "Invalid authorization2", 400
+    """if not check_authorization(request):
+        return "Invalid authorization2", 400"""
     return jsonify(read_messages())
 
 #_________________________________________Off-Topic Detection using Naive Bayes
@@ -131,19 +129,20 @@ def generate_feedback(message_content):
             "Van Gogh's 'Starry Night' was painted from his asylum room's window."
         ]
     }
-
+    messages = read_messages()
     blob = TextBlob(message_content)
     nouns = [word.lower() for word, tag in blob.tags if tag in ('NN', 'NNS')]
-    for topic in feedback_messages:
-        if topic in nouns:
-            return random.choice(feedback_messages[topic])
+    if (len(messages)+1) % 3 == 0:  # Only provide feedback after every 3 user messages
+        for topic in feedback_messages:
+            if topic in nouns:
+                return random.choice(feedback_messages[topic])
     return None
 
 #_________________________________________Send Message: Handles sending and receiving messages
 @app.route('/', methods=['POST'])
 def send_message():
-    if not check_authorization(request):
-        return "Invalid authorization3", 400
+    """if not check_authorization(request):
+        return "Invalid authorization3", 400"""
     
     message = request.json
     if not message or 'content' not in message or 'sender' not in message or 'timestamp' not in message:
@@ -186,7 +185,7 @@ def read_messages():
         return []
 
 def save_messages(messages):
-    MAX_MESSAGES = 20
+    MAX_MESSAGES = 10
     if len(messages) > MAX_MESSAGES:
         messages = messages[-MAX_MESSAGES:]
     with open(CHANNEL_FILE, 'w') as f:
