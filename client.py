@@ -19,6 +19,7 @@ HUB_URL = 'http://localhost:5555'# Hub endpoint URL
 CHANNELS = None# Cached list of channels
 LAST_CHANNEL_UPDATE = None# Timestamp of last channel update
 db = SQLAlchemy() 
+headers = {"Authorization": "authkey 1234567890"}
 
 #__________________________________________USER MODEL required by Flask-User for authentication and account management
 class User(db.Model, UserMixin):
@@ -49,7 +50,7 @@ def update_channels():
     global CHANNELS, LAST_CHANNEL_UPDATE
     if CHANNELS and LAST_CHANNEL_UPDATE and (datetime.datetime.now() - LAST_CHANNEL_UPDATE).seconds < 60:
         return CHANNELS # fetch list of channels from server
-    response = requests.get('http://localhost:5555/channels', headers={'Authorization': 'authkey 1234567890'})
+    response = requests.get('http://localhost:5555/channels', headers=headers)
     print("Response from Hub:", response.text) 
     if response.status_code != 200:
         return "Error fetching channels: "+str(response.text), 400
@@ -78,7 +79,7 @@ def show_channel():
             break
     if not channel:
         return "Channel not found", 404
-    response = requests.get(channel['endpoint'], headers={'Authorization': 'authkey ' + channel['authkey']})
+    response = requests.get(channel['endpoint'], headers=headers)
     if response.status_code != 200:
         return "Error fetching messages: "+str(response.text), 400
     messages = response.json()
@@ -101,7 +102,7 @@ def post_message():
     message_sender = request.form['sender']
     message_timestamp = datetime.datetime.now().isoformat()
     response = requests.post(channel['endpoint'],
-                             headers={'Authorization': 'authkey ' + channel['authkey']},
+                             headers=headers,
                              json={'content': message_content, 'sender': message_sender, 'timestamp': message_timestamp})
     if response.status_code != 200:
         return "Error posting message: "+str(response.text), 400

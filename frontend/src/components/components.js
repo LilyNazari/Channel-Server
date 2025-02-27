@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "http://localhost:5005";
+const API_URL = "http://127.0.0.1:5005";
 
 export default function Client() {
   // State variables for messages, user input, and username
@@ -97,7 +97,7 @@ export default function Client() {
           />
           {/* Unread messages*/}
           <div>
-            <h3>Channels <span style={{ color: "red" }}>{unreadCount > 0 && `(${unreadCount} new)`}</span></h3>
+            <h3>Unread Messages<span style={{ color: "red" }}>{unreadCount > 0 && `(${unreadCount} new)`}</span></h3>
           </div>
           {/* Message display area */}
           <div style={{ height: "300px", overflowY: "auto", border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>

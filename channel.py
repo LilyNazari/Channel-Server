@@ -18,17 +18,19 @@ app.app_context().push() # create an app context before initializing db
 #__________________________________________Channel and Hub Configuration
 HUB_URL = 'http://localhost:5555'
 HUB_AUTHKEY = '1234567890'
-CHANNEL_AUTHKEY = '0987654321'
+CHANNEL_AUTHKEY = '1234567890'
 CHANNEL_NAME = "Art History Chat"
 CHANNEL_ENDPOINT = "http://localhost:5001"
 CHANNEL_FILE = 'messages.json'
 CHANNEL_TYPE_OF_SERVICE = 'aiweb24:chat'  
+headers = {"Authorization": "authkey 1234567890"}
 #__________________________________________Register Channel with Hub
 @app.cli.command('register')
 def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
     # send a POST request to server /channels
     response = requests.post(HUB_URL + '/channels', 
+                             headers=headers,
                              data=json.dumps({
                                 "name": CHANNEL_NAME,
                                 "endpoint": CHANNEL_ENDPOINT,
@@ -54,26 +56,26 @@ def register_command():
 
 #_________________________________________Request Authorization Check
 def check_authorization(request):
-    global CHANNEL_AUTHKEY
-    print("Authorization Header:", request.headers.get('Authorization'))  # Log the header for debugging
-    if 'Authorization' not in request.headers:
-        return False
-    if request.headers['Authorization'] != 'authkey ' + CHANNEL_AUTHKEY:
-        return False
+    #global CHANNEL_AUTHKEY
+    #print("Authorization Header:", request.headers.get('Authorization'))  # Log the header for debugging
+    #if 'Authorization' not in request.headers:
+        #return False
+    #if request.headers['Authorization'] != 'authkey ' + CHANNEL_AUTHKEY:
+        #return False
     return True
 
 #_________________________________________Health Check Endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    """if not check_authorization(request):
-        return "Invalid authorization1", 400"""
+    if not check_authorization(request):
+        return "Invalid authorization1", 400
     return jsonify({'name': CHANNEL_NAME}),  200
 
 #_________________________________________Get Messages: Returns A list of messages
 @app.route('/', methods=['GET'])
 def home_page():
-    """if not check_authorization(request):
-        return "Invalid authorization2", 400"""
+    if not check_authorization(request):
+        return "Invalid authorization2", 400
     return jsonify(read_messages())
 
 #_________________________________________Off-Topic Detection using Naive Bayes
@@ -141,8 +143,8 @@ def generate_feedback(message_content):
 #_________________________________________Send Message: Handles sending and receiving messages
 @app.route('/', methods=['POST'])
 def send_message():
-    """if not check_authorization(request):
-        return "Invalid authorization3", 400"""
+    if not check_authorization(request):
+        return "Invalid authorization3", 400
     
     message = request.json
     if not message or 'content' not in message or 'sender' not in message or 'timestamp' not in message:
