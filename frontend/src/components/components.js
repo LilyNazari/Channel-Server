@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "http://localhost:5005/show?channel=http%253A//localhost%253A5001";
+const API_URL = "http://localhost:5005";
 
 export default function Client() {
   // State variables for messages, user input, and username
@@ -9,6 +9,7 @@ export default function Client() {
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
   const [isUsernameSet, setIsUsernameSet] = useState(!!localStorage.getItem("username"));
   const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch messages when component mounts and refresh every 5 seconds
   useEffect(() => {
@@ -39,18 +40,26 @@ export default function Client() {
   // Function to send a new message to the server
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const newMessage = { username, text: input };
+    const formattedMessage = formatText(input);
+    const newMessage = { username, text: formattedMessage };
     setInput(""); // Clear input field after sending
     try {
       await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": "authkey 1234567890" },
         body: JSON.stringify(newMessage),
       });
       fetchMessages(); // Refresh messages after sending
+      setUnreadCount(0);
     } catch (error) {
       console.error("Error sending message:", error);
     }
+  };
+  //Function to format the text
+  const formatText = (text) => {
+    return text
+      .replace(/\[nop\]_(.*?)_\[\/nop\]/g, "<b>$1</b>")
+      .replace(/\[nop\]\*(.*?)\*\[\/nop\]/g, "<i>$1</i>");
   };
   // Function to filter messages based on the search term
   const filteredMessages = messages.filter((msg) =>
@@ -84,15 +93,12 @@ export default function Client() {
             placeholder="Search messages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginBottom: "10px",
-              border: "1px solid #ccc",
-              borderRadius: "5px",
-            }}
+            style={{ width: "100%", padding: "10px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
           />
-
+          {/* Unread messages*/}
+          <div>
+            <h3>Channels <span style={{ color: "red" }}>{unreadCount > 0 && `(${unreadCount} new)`}</span></h3>
+          </div>
           {/* Message display area */}
           <div style={{ height: "300px", overflowY: "auto", border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
           {filteredMessages.map((msg, index) => (
@@ -104,6 +110,7 @@ export default function Client() {
                   marginBottom: "5px",
                   borderRadius: "5px",
                 }}
+                dangerouslySetInnerHTML={{ __html: msg.text }}
               >
                 <strong>{msg.username}:</strong> {msg.text}
               </div>
