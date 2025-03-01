@@ -95,11 +95,31 @@ relevant_sentences = [
     "Who is your favorite Impressionist painter?",
     "I love Vincent van Gogh's Starry Night!",
     "Can we discuss the Baroque period?",
-    "What do you think about Picasso's influence on modern art?"
-    "[nop]_word_[/nop]"
-    "[nop]*word*[/nop]"
-    "Yes"
-    "No"
+    "What do you think about Picasso's influence on modern art?",
+    "[nop]_word_[/nop]",
+    "[nop]*word*[/nop]",
+    "Yes",
+    "No",
+    "What techniques did Leonardo da Vinci use in his paintings?",
+    "Tell me about the influence of Romanticism on landscape art.",
+    "How did the Dada movement challenge traditional art?",
+    "Which artists were prominent during the Rococo period?",
+    "What role did fresco painting play in the Italian Renaissance?",
+    "Can you explain Cubism and its key characteristics?",
+    "How did Surrealism change the way we perceive reality in art?",
+    "What makes Michelangelo's sculptures so significant?",
+    "Who were the major contributors to Abstract Expressionism?",
+    "Tell me about Frida Kahlo’s self-portraits and their meaning.",
+    "What is the significance of ukiyo-e in Japanese art history?",
+    "How did the invention of photography impact painting?",
+    "What is the connection between Bauhaus and modern design?",
+    "Can you explain the symbolism in Hieronymus Bosch’s work?",
+    "How did the Harlem Renaissance influence African American art?",
+    "Tell me about the differences between Gothic and Romanesque art.",
+    "What are the characteristics of Fauvism?",
+    "Who were the key figures in the Pre-Raphaelite Brotherhood?",
+    "What is the historical importance of the Sistine Chapel ceiling?",
+    "How did Neoclassicism respond to the Rococo style?"
 ]
 
 irrelevant_sentences = [
@@ -107,7 +127,27 @@ irrelevant_sentences = [
     "What's your favorite movie?",
     "Let's talk about cooking recipes.",
     "I need help with my math homework.",
-    "Who is the best pop singer today?"
+    "Who is the best pop singer today?",
+    "I need recommendations for a good sci-fi novel.",
+    "Let's plan a vacation to the beach.",
+    "What’s the latest update on the stock market?",
+    "Do you prefer cats or dogs as pets?",
+    "Can you help me fix my computer?",
+    "I love playing video games in my free time.",
+    "Which city has the best street food?",
+    "Tell me about the latest fashion trends.",
+    "What’s your go-to workout routine?",
+    "Who won the last Formula 1 race?",
+    "I’m learning to play the guitar—any tips?",
+    "What's the best way to grow tomatoes at home?",
+    "What’s your favorite type of sushi?",
+    "I can’t decide which phone to buy next.",
+    "Let’s talk about conspiracy theories!",
+    "Can you suggest a good romantic comedy?",
+    "What’s the best way to train a puppy?",
+    "How do I improve my chess strategy?",
+    "Let’s discuss the latest smartphone features.",
+    "What's your favorite type of coffee?"
 ]
 
 # Labels: 1 for relevant, 0 for irrelevant

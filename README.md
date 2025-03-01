@@ -1,56 +1,46 @@
-# Art History Chat Application
+# Start Code for Task 3
 
-This is a Flask-based chat application that allows users to discuss art history topics. It uses Flask as the backend, React as the frontend, and features user authentication, message posting, and off-topic detection with AI. The app integrates with a hub server for managing multiple chat channels and provides an interactive environment for discussing art, artists, and history.
+AI & the Web, winter term 2024/2025
 
-## Features
+## Running the code on your development server
 
-- User authentication with Flask-Login.
-- Dynamic message posting and retrieval.
-- Off-topic detection using a machine learning model.
-- Profanity filter to ensure clean discussions.
-- React frontend for an interactive and user-friendly interface.
-- AI-generated feedback based on the content of messages.
+1. Create and activate a virtual environment, install everything from requirements.txt
 
-## Tech Stack
+2. Run hub
 
-- **Backend**: Flask, Flask-Login, Flask-SQLAlchemy
-- **Frontend**: React
-- **Machine Learning**: Scikit-learn (Naive Bayes), TextBlob
-- **Database**: SQLite (via Flask-SQLAlchemy)
-- **Additional Libraries**: Flask-CORS, better_profanity, requests
+    > python hub.py
 
-## Setup Instructions
+3. Run the channel server (different shell)
 
-### Prerequisites
+    > python channel.py
 
-Make sure you have the following installed:
+4. Register the channel server with the hub (another different shell)
 
-- Python (3.x)
-- Node.js and npm
-- Flask and other Python dependencies
-- React and Node dependencies
+    > flask --app channel.py register
+    
+5. Now start the client (new shell of shell from 4.) 
 
-### Endpoints
+    > python client.py
 
-- /home: Displays a list of available chat channels.
-- /show: Shows the messages from a specific channel.
-- /post: Used to send a message to a channel.
-- /health: Returns the health status of the server.
-- / (GET): Returns a list of messages from the channel.
-- / (POST): Receives a new message and processes it (checks profanity and off-topic content).
+6. Open the client, link is displayed after client start (e.g., http://localhost:5005)
 
-### Frontend Routes
-- /: The main chat interface.
-- /static/*: Serves static files (CSS, JS, images) from the React app.
 
-### How It Works
-- Chat Channels:
-  Channels are fetched from a hub server using the /channels endpoint.
-Each channel can have multiple messages, and users can post new messages.
-- Off-Topic Detection
-The system uses a Naive Bayes classifier to detect off-topic messages based on pre-defined training data.
-Messages deemed off-topic are rejected.
-- Profanity Filter
-The app uses the better_profanity library to censor inappropriate words in messages.
-- AI Feedback
-When a user posts a message, the system analyzes the content for certain topics (like art, artists, painting styles) and responds with relevant AI-generated feedback.
+## Creating your own client
+
+1. Set variables in the client code
+2. Modify the code
+
+# Deploying on the server
+
+Follow the same steps as for task 2.
+
+Don't forget to adjust the variables in the client code. 
+
+You don't need to run the hub but use the public hub:
+
+http://vm146.rz.uni-osnabrueck.de/hub
+SERVER_AUTHKEY = 'Crr-K24d-2N'
+
+You don't need to start your channel explicitly because the Apache server will do that for you.
+
+But don't forget to register your channel server with the hub (see above).
