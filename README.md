@@ -6,7 +6,7 @@ Backend (Flask Server): Handles message exchange, channel management, user authe
 Frontend (React App): Provides a user interface for chatting, displaying messages, and interacting with the server.
 The backend and frontend are both integrated to work together seamlessly. The backend also supports AI-based message feedback and content moderation such as off-topic detection and profanity filtering.
 
-##Table of Contents
+#Table of Contents
 Features
 Installation
 Backend Setup
@@ -15,7 +15,7 @@ Usage
 Endpoints
 License
 
-## Features
+# Features
 Backend:
 Channel Management: Registers and manages channels dynamically through the Hub.
 User Authentication: Handles user management and login with Flask-Login.
