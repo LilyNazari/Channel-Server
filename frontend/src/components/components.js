@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from 'axios';
 import "../App.css";
 
@@ -16,26 +16,25 @@ export default function Client() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   
+// Fetch messages when component mounts and periodically
+const fetchMessages =  useCallback(async () => {
+  try {
+    const response = await axios.get(CHANNEL_URL, { headers });
+    const newMessages = response.data;
+    setMessages(newMessages);
+    // Update unread count
+    const currentCount = newMessages.length - messages.length;
+    if (currentCount > 0) setUnreadCount(prev => prev + currentCount);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+  }
+}, [messages.length]); 
+useEffect(() => {
+  fetchMessages();
+  const interval = setInterval(fetchMessages, 5000);
+  return () => clearInterval(interval);
+}, [fetchMessages]);
 
-  // Function to fetch the latest messages from the server
-  const fetchMessages = useCallback(async () => {
-    try {
-      const response = await axios.get(CHANNEL_URL, { headers });
-      const newMessages = response.data;
-      setMessages(newMessages);
-      // Update unread count
-      const currentCount = newMessages.length - messages.length;
-      if (currentCount > 0) setUnreadCount((prev) => prev + currentCount);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  }, [messages]); // Add messages as a dependency if necessary
-  
-  useEffect(() => {
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 5000);
-    return () => clearInterval(interval);
-  }, [fetchMessages]);
 
   // Function to save username and move to chat screen
   const saveUsername = () => {
@@ -86,7 +85,8 @@ export default function Client() {
   );
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
+    <div className="client-container">
+      <h1 className="header">Chat Here!</h1>
       {/* If no username is set, prompt user to enter one */}
       {!isUsernameSet ? (
         <div>
@@ -95,11 +95,10 @@ export default function Client() {
             placeholder="Enter username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            className="username-input"
           />
           <button
-            onClick={saveUsername}
-            style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", cursor: "pointer" }}
+            onClick={saveUsername} className="button save-button"
           >
             Save Username
           </button>
@@ -112,23 +111,18 @@ export default function Client() {
             placeholder="Search messages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: "95%", padding: "10px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+            className="search-input"
           />
           {/* Unread messages*/}
           <div>
-            <h3>Unread Messages<span style={{ color: "red" }}>{unreadCount > 0 && `(${unreadCount} new)`}</span></h3>
+            <h3>Unread Messages<span className="unread-messages">{unreadCount > 0 && `(${unreadCount})`}</span></h3>
           </div>
           {/* Message display area */}
-          <div style={{ height: "300px", overflowY: "auto", border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
+          <div className="messages-container">
           {filteredMessages.map((msg, index) => (
               <div
-                key={index}
-                style={{
-                  padding: "10px",
-                  backgroundColor: "#f1f1f1",
-                  marginBottom: "5px",
-                  borderRadius: "5px",
-                }}
+                key={index} 
+                className="message"
               >
                 <strong>{msg.sender}:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(msg.content) }} />
               </div>
@@ -141,12 +135,12 @@ export default function Client() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            style={{ width: "95%", padding: "10px", marginBottom: "10px" }}
+            className="message-input"
           />
           {/* Send button */}
           <button
             onClick={sendMessage}
-            style={{ width: "99.5%", padding: "10px", backgroundColor: "#28a745", color: "white", border: "none", cursor: "pointer" }}
+            className="button send-button"
           >
             Send
           </button>

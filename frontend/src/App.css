@@ -1,24 +1,58 @@
+body {
+  background-color: #404040;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 /* General container styles */
 .client-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: auto;
   padding: 20px;
-  max-width: 500px;
-  margin: auto;
+  max-width: 750px;
+  width: 100%;
   font-family: Arial, sans-serif;
 }
 
-/* Username input section */
+.header {
+  background-color: #404040;
+  color: #BF8F54;
+  padding: 20px;
+  width: 500px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+/* Inputs */
 .username-input, .message-input, .search-input {
   width: 100%;
+  max-width: 400px;
   padding: 10px;
+  background-color: #728C4A;
   margin-bottom: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #728C4A;
   border-radius: 5px;
   font-size: 16px;
+  text-align: center;
+}
+
+.message-input::placeholder, .search-input::placeholder {
+  color: #404040;
+  opacity: 1;
 }
 
 /* Buttons */
 .button {
   width: 100%;
+  max-width: 200px;
   padding: 10px;
   border: none;
   cursor: pointer;
@@ -27,46 +61,71 @@
 }
 
 .save-button {
-  background-color: #007bff;
-  color: white;
+  background-color: #728C4A;
+  color: #404040;
 }
 
 .send-button {
-  background-color: #28a745;
-  color: white;
+  width: 100px;
+  background-color: #A65A49;
+  color: #404040;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto;
 }
 
 /* Unread messages */
 .unread-messages {
   font-size: 18px;
-  color: red;
+  color: #A65A49;
+  text-align: center;
+}
+
+h3 {
+  color: #BF8F54;
+  text-align: center;
 }
 
 /* Message display area */
 .messages-container {
+  width: 100%;
+  max-width: 500px;
   height: 300px;
   overflow-y: auto;
-  border: 1px solid #ccc;
+  border: 1px solid #404040;
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #fafafa;
+  background-color: #404040;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 8px;
+  background: #404040;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: #BF8F54;
   border-radius: 5px;
 }
 
 .message {
   padding: 10px;
-  background-color: #f1f1f1;
+  background-color: #BF8F54;
   margin-bottom: 5px;
   border-radius: 5px;
+  color: #404040;
 }
 
 .message strong {
-  color: #333;
+  color: #A65A49;
 }
 
 /* Responsive design */
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .client-container {
-    width: 90%;
+    width: 100%;
   }
 }

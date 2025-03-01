@@ -1,10 +1,10 @@
 import React from "react";
 import Client from "./components/components";
+import "./App.css";
 
 function App() {
   return (
     <div>
-      <h1 style={{ textAlign: "center", padding: "20px", color: "#007bff" }}>Chat Here!</h1>
       <Client />
     </div>
   );

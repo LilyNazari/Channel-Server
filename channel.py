@@ -98,6 +98,8 @@ relevant_sentences = [
     "What do you think about Picasso's influence on modern art?"
     "[nop]_word_[/nop]"
     "[nop]*word*[/nop]"
+    "Yes"
+    "No"
 ]
 
 irrelevant_sentences = [
@@ -126,27 +128,49 @@ def is_off_topic(content):
 #_________________________________________Feedback Logic: Generates feedback based on the message content
 def generate_feedback(message_content):
     feedback_messages = {
-        "art": [
-            "Art is not what you see, but what you make others see. – Edgar Degas",
-            "The purpose of art is washing the dust of daily life off our souls. – Pablo Picasso"
-        ],
-        "history": [
-            "Did you know? Art history is often divided into periods such as Renaissance, Baroque, and Modernism.",
-            "The Renaissance marked a rebirth of art inspired by ancient Greece and Rome."
-        ],
-        "artist": [
-            "Fun fact: Leonardo da Vinci was ambidextrous and could write with both hands!",
-            "Pablo Picasso went through different artistic phases, including his Blue and Rose periods."
-        ],
-        "painting": [
-            "The 'Mona Lisa' was once stolen from the Louvre in 1911 and recovered two years later.",
-            "Van Gogh's 'Starry Night' was painted from his asylum room's window."
-        ]
-    }
+    "art": [
+        "Art is not what you see, but what you make others see. – Edgar Degas",
+        "The purpose of art is washing the dust of daily life off our souls. – Pablo Picasso",
+        "Every artist dips his brush in his own soul and paints his own nature into his pictures. – Henry Ward Beecher",
+        "Art enables us to find ourselves and lose ourselves at the same time. – Thomas Merton",
+        "Impressionism was once criticized for looking unfinished, but it revolutionized modern painting.",
+        "Ancient cave paintings, such as those in Lascaux, France, date back over 17,000 years!",
+        "Dadaism emerged as an anti-art movement during World War I, challenging traditional artistic norms.",
+        "The Surrealist movement, led by artists like Salvador Dalí, explored the unconscious mind through dreamlike imagery."
+    ],
+    "history": [
+        "Did you know? Art history is often divided into periods such as Renaissance, Baroque, and Modernism.",
+        "The Renaissance marked a rebirth of art inspired by ancient Greece and Rome.",
+        "During the Baroque period, artists like Caravaggio and Rembrandt used dramatic lighting techniques known as chiaroscuro.",
+        "The Impressionist movement began in the 19th century, with artists like Monet and Renoir focusing on light and movement.",
+        "Cubism, pioneered by Picasso and Braque, broke objects into geometric shapes to depict multiple perspectives.",
+        "The Harlem Renaissance in the 1920s celebrated African American culture through art, music, and literature.",
+        "Fresco painting, used in Michelangelo's Sistine Chapel, involves applying pigment onto wet plaster for durability."
+    ],
+    "artist": [
+        "Fun fact: Leonardo da Vinci was ambidextrous and could write with both hands!",
+        "Pablo Picasso went through different artistic phases, including his Blue and Rose periods.",
+        "Frida Kahlo often painted self-portraits, reflecting her struggles and resilience.",
+        "Michelangelo considered himself a sculptor, even though he painted the Sistine Chapel ceiling.",
+        "Vincent van Gogh created over 2,000 artworks but only sold one painting in his lifetime.",
+        "Claude Monet's garden in Giverny inspired many of his famous paintings, including the Water Lilies series.",
+        "Georgia O'Keeffe is known for her large-scale flower paintings and depictions of the American Southwest."
+    ],
+    "painting": [
+        "The 'Mona Lisa' was once stolen from the Louvre in 1911 and recovered two years later.",
+        "Van Gogh's 'Starry Night' was painted from his asylum room's window.",
+        "Jackson Pollock pioneered action painting, a technique involving dripping paint onto canvas.",
+        "Edvard Munch's 'The Scream' was stolen twice, once in 1994 and again in 2004!",
+        "Diego Velázquez's 'Las Meninas' is considered a masterpiece of perspective and composition.",
+        "Johannes Vermeer used a camera obscura, an early optical device, to create lifelike compositions.",
+        "Gustav Klimt’s 'The Kiss' is covered in real gold leaf, emphasizing its opulence and sensuality."
+    ]
+}
     messages = read_messages()
     blob = TextBlob(message_content)
     nouns = [word.lower() for word, tag in blob.tags if tag in ('NN', 'NNS')]
-    if (len(messages)+1) % 3 == 0:  # Only provide feedback after every 3 user messages
+    print("Extracted Nouns:", nouns)  # Debugging Line
+    if True:  # Only provide feedback after every 3 user messages
         for topic in feedback_messages:
             if topic in nouns:
                 return random.choice(feedback_messages[topic])
@@ -168,10 +192,11 @@ def send_message():
     if is_off_topic(message['content']):
         return "Off-topic content", 400
     
-    extra = message['extra'] if 'extra' in message else None
-    
+    #extra = message['extra'] if 'extra' in message else None
+    extra = message.get('extra', None)
     # Generate feedback message
     feedback = generate_feedback(message['content'])
+    print("Feedback Generated:", feedback)
     messages = read_messages()
     if feedback:
         messages.append({'content': feedback,
