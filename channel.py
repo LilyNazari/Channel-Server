@@ -7,6 +7,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from textblob import TextBlob
 from better_profanity import profanity
+from flask_cors import CORS
+
 #__________________________________________Create and configure Flask app
 profanity.load_censor_words() # Loading profanity filter
 class ConfigClass(object): # Class-based application configuration
@@ -14,6 +16,14 @@ class ConfigClass(object): # Class-based application configuration
 app = Flask(__name__)
 app.config.from_object(__name__ + '.ConfigClass')  
 app.app_context().push() # create an app context before initializing db
+
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Authorization", "Content-Type"]
+    }
+})
 
 #__________________________________________Channel and Hub Configuration
 HUB_URL = 'http://localhost:5555'
@@ -86,6 +96,8 @@ relevant_sentences = [
     "I love Vincent van Gogh's Starry Night!",
     "Can we discuss the Baroque period?",
     "What do you think about Picasso's influence on modern art?"
+    "[nop]_word_[/nop]"
+    "[nop]*word*[/nop]"
 ]
 
 irrelevant_sentences = [

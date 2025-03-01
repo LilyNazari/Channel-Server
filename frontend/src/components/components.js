@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
+import axios from 'axios';
+import "../App.css";
 
-const API_URL = "http://127.0.0.1:5005";
+
+const CHANNEL_URL = "http://localhost:5001";  // Channel server URL
+const headers = { "Authorization": "authkey 1234567890" };
 
 export default function Client() {
   // State variables for messages, user input, and username
@@ -11,23 +15,27 @@ export default function Client() {
   const [searchTerm, setSearchTerm] = useState(""); // State for search term
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch messages when component mounts and refresh every 5 seconds
+  
+
+  // Function to fetch the latest messages from the server
+  const fetchMessages = useCallback(async () => {
+    try {
+      const response = await axios.get(CHANNEL_URL, { headers });
+      const newMessages = response.data;
+      setMessages(newMessages);
+      // Update unread count
+      const currentCount = newMessages.length - messages.length;
+      if (currentCount > 0) setUnreadCount((prev) => prev + currentCount);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  }, [messages]); // Add messages as a dependency if necessary
+  
   useEffect(() => {
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Function to fetch the latest messages from the server
-  const fetchMessages = async () => {
-    try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      setMessages(data.slice(-10)); // Limit to last 10 messages
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
+  }, [fetchMessages]);
 
   // Function to save username and move to chat screen
   const saveUsername = () => {
@@ -40,21 +48,32 @@ export default function Client() {
   // Function to send a new message to the server
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const formattedMessage = formatText(input);
-    const newMessage = { username, text: formattedMessage };
-    setInput(""); // Clear input field after sending
+
+    const messageData = {
+      content: input,
+      sender: username,
+      timestamp: new Date().toISOString(),
+    };
+
     try {
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Authorization": "authkey 1234567890" },
-        body: JSON.stringify(newMessage),
-      });
-      fetchMessages(); // Refresh messages after sending
-      setUnreadCount(0);
+      await axios.post(CHANNEL_URL, messageData, { headers });
+      setInput("");  // Clear input after sending
+      fetchMessages();  // Refresh messages
+      setUnreadCount(0);  // Reset unread count
     } catch (error) {
       console.error("Error sending message:", error);
+      if (error.response?.status === 400) {
+        alert(error.response.data); // Show error message from server
+      }
     }
   };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  };
+
   //Function to format the text
   const formatText = (text) => {
     return text
@@ -63,7 +82,7 @@ export default function Client() {
   };
   // Function to filter messages based on the search term
   const filteredMessages = messages.filter((msg) =>
-    msg.text.toLowerCase().includes(searchTerm.toLowerCase())
+    msg.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -93,7 +112,7 @@ export default function Client() {
             placeholder="Search messages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: "100%", padding: "10px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+            style={{ width: "95%", padding: "10px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
           />
           {/* Unread messages*/}
           <div>
@@ -105,14 +124,13 @@ export default function Client() {
               <div
                 key={index}
                 style={{
-                  padding: "5px",
+                  padding: "10px",
                   backgroundColor: "#f1f1f1",
                   marginBottom: "5px",
                   borderRadius: "5px",
                 }}
-                dangerouslySetInnerHTML={{ __html: msg.text }}
               >
-                <strong>{msg.username}:</strong> {msg.text}
+                <strong>{msg.sender}:</strong> <span dangerouslySetInnerHTML={{ __html: formatText(msg.content) }} />
               </div>
             ))}
           </div>
@@ -122,12 +140,13 @@ export default function Client() {
             placeholder="Type a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            onKeyPress={handleKeyPress}
+            style={{ width: "95%", padding: "10px", marginBottom: "10px" }}
           />
           {/* Send button */}
           <button
             onClick={sendMessage}
-            style={{ width: "100%", padding: "10px", backgroundColor: "#28a745", color: "white", border: "none", cursor: "pointer" }}
+            style={{ width: "99.5%", padding: "10px", backgroundColor: "#28a745", color: "white", border: "none", cursor: "pointer" }}
           >
             Send
           </button>

@@ -64,3 +64,77 @@ button {
   border: none;
   cursor: pointer;
 }
+
+/* General container styles */
+.client-container {
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+}
+
+/* Username input section */
+.username-input, .message-input, .search-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* Buttons */
+.button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.send-button {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Unread messages */
+.unread-messages {
+  font-size: 18px;
+  color: red;
+}
+
+/* Message display area */
+.messages-container {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+  border-radius: 5px;
+}
+
+.message {
+  padding: 10px;
+  background-color: #f1f1f1;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.message strong {
+  color: #333;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .client-container {
+    width: 90%;
+  }
+}
+
